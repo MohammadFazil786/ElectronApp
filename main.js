@@ -10,18 +10,40 @@ function createWindow () {
 
   mainWindow = new BrowserWindow({
     width: 1000, height: 800,
-    webPreferences: { nodeIntegration: true, contextIsolation: true }
+    webPreferences: { nodeIntegration: true, contextIsolation: true },
+    backgroundColor: '#2B2E3B'
+  })
+  secondaryWindow = new BrowserWindow({
+    width: 600, height: 300,
+    webPreferences: { nodeIntegration: true, contextIsolation: true },
+    backgroundColor: 'yellow',
+    parent: mainWindow,
+    modal: true,
+    show: false
   })
 
   // Load index.html into the new BrowserWindow
   mainWindow.loadFile('index.html')
+  secondaryWindow.loadFile('secondary.html')
+  // mainWindow.loadURL('https://google.com')
 
+  // mainWindow.once('ready-to-show',mainWindow.show)
   // Open DevTools - Remove for PRODUCTION!
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
+  setTimeout(() =>{
+    secondaryWindow.show()
+    setTimeout(()=>{
+      secondaryWindow.close()
+      secondaryWindow = null
+    },3000)
+  },2000)
 
   // Listen for window being closed
   mainWindow.on('closed',  () => {
     mainWindow = null
+  })
+  secondaryWindow.on('closed',  () => {
+    secondaryWindow = null
   })
 }
 
