@@ -1,49 +1,43 @@
 // Modules
-const {app, BrowserWindow} = require('electron')
-
+const {app, BrowserWindow,ipcMain} = require('electron')
+const windowStateKeeper = require('electron-window-state')
+const readItem = require('./readItem');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
+ipcMain.on('new-item',(event,itemUrl) =>{
+  readItem(itemUrl,item =>{
+   event.sender.send('new-item-success',item)
+  })
+})
+
 // Create a new BrowserWindow when `app` is ready
 function createWindow () {
 
-  mainWindow = new BrowserWindow({
-    width: 1000, height: 800,
-    webPreferences: { nodeIntegration: true, contextIsolation: true },
-    backgroundColor: '#2B2E3B'
+  let state = windowStateKeeper({
+    defaultWidth: 500,
+    defaultHeight: 650
   })
-  secondaryWindow = new BrowserWindow({
-    width: 600, height: 300,
-    webPreferences: { nodeIntegration: true, contextIsolation: true },
-    backgroundColor: 'yellow',
-    parent: mainWindow,
-    modal: true,
-    show: false
+
+  mainWindow = new BrowserWindow({
+    x: state.x, y: state.y,
+    width: state.width, height: state.height,
+    minWidth: 350, maxWidth: 650, minHeight: 300,
+    webPreferences: { nodeIntegration: true },
   })
 
   // Load index.html into the new BrowserWindow
-  mainWindow.loadFile('index.html')
-  secondaryWindow.loadFile('secondary.html')
+  mainWindow.loadFile('renderer/main.html')
   // mainWindow.loadURL('https://google.com')
-
+ state.manage(mainWindow)
   // mainWindow.once('ready-to-show',mainWindow.show)
   // Open DevTools - Remove for PRODUCTION!
-  // mainWindow.webContents.openDevTools();
-  setTimeout(() =>{
-    secondaryWindow.show()
-    setTimeout(()=>{
-      secondaryWindow.close()
-      secondaryWindow = null
-    },3000)
-  },2000)
+  mainWindow.webContents.openDevTools();
 
   // Listen for window being closed
   mainWindow.on('closed',  () => {
     mainWindow = null
-  })
-  secondaryWindow.on('closed',  () => {
-    secondaryWindow = null
   })
 }
 
